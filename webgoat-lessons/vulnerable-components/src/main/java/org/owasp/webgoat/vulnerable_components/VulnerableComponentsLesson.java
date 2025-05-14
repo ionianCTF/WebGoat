@@ -46,13 +46,32 @@ public class VulnerableComponentsLesson extends AssignmentEndpoint {
         Contact contact = null;
         
         try {
-        	if (!StringUtils.isEmpty(payload)) {
-        		payload = payload.replace("+", "").replace("\r", "").replace("\n", "").replace("> ", ">").replace(" <", "<");
-        	}
+            if (!StringUtils.isEmpty(payload)) {
+                payload = payload.replace("+", "")
+                                 .replace("\r", "")
+                                 .replace("\n", "")
+                                 .replace("> ", ">")
+                                 .replace(" <", "<");
+            }
+        
+            XStream xstream = new XStream();
+            
+            // Step 1: Set up security
+            XStream.setupDefaultSecurity(xstream);
+        
+            // Step 2: Whitelist allowed classes
+            xstream.allowTypes(new Class[] { Contact.class });
+        
+            // Step 3: Deserialize securely
             contact = (Contact) xstream.fromXML(payload);
+        
         } catch (Exception ex) {
-            return failed(this).feedback("vulnerable-components.close").output(ex.getMessage()).build();
+            return failed(this)
+                   .feedback("vulnerable-components.close")
+                   .output("Deserialization failed: " + ex.getMessage())
+                   .build();
         }
+
         
         try {
             if (null!=contact) {
